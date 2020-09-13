@@ -1,0 +1,17 @@
+obstacle_range: 3.0
+raytrace_range: 3.5
+
+footprint: [[-0.205, -0.155], [-0.205, 0.155], [0.077,0.155], [0.077, -0.155]]
+
+publish_frequency: 1.0
+
+inflation_layer:
+  inflation_radius: 0.2
+
+obstacle_layer:
+  observation_sources: scan
+  scan: {sensor_frame: base_scan, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+  
+static:
+  map_topic: map
+  subscribe_to_updates: true

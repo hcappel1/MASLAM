@@ -1,0 +1,80 @@
+<launch>
+
+	<arg name="odom_frame_id" default="tb3_1/odom"/>
+	<arg name="base_frame_id" default="tb3_1/base_footprint"/>
+	<arg name="global_frame_id" default="map"/>
+	<arg name="odom_topic" default="/tb3_1/odom"/>
+	<arg name="scan_topic" default="/tb3_1/scan"/>
+
+	<node pkg="move_base" type="move_base" respawn="false" name="move_base_2" output="screen">
+		<rosparam file="$(find navigation_pkg)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
+		<rosparam file="$(find navigation_pkg)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
+		<rosparam file="$(find navigation_pkg)/params/local_costmap_params.yaml" command="load" />
+		<rosparam file="$(find navigation_pkg)/params/global_costmap_params.yaml" command="load" />
+		<rosparam file="$(find navigation_pkg)/params/dwa_local_planner_params.yaml" command="load" />
+		<rosparam file="$(find navigation_pkg)/params/move_base_params.yaml" command="load" />
+		<rosparam file="$(find navigation_pkg)/params/navfn_global_planner_params.yaml" command="load" />
+
+
+		<!-- remap frame_id parameters using our input data -->
+		<param name="global_costmap/global_frame" value="$(arg global_frame_id)" />
+		<param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)" />
+		<param name="local_costmap/global_frame" value="$(arg odom_frame_id)" />
+		<param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)" />
+		<param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame_id)" />
+		<param name="global_frame_id" value="$(arg global_frame_id)" />
+
+		<param name="base_global_planner" value="navfn/NavfnROS" />
+		<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+		<param name="local_costmap/width" value="10.0"/>
+		<param name="local_costmap/height" value="10.0"/>
+
+		<remap from="cmd_vel" to="/tb3_1/cmd_vel" />
+		<remap from="odom" to="$(arg odom_topic)" />
+		<remap from="scan" to="$(arg scan_topic)" />
+		<remap from="map" to="/map" />
+		<remap from="base_scan" to="tb3_1/base_scan" />
+
+		<remap from="/move_base/DWAPlannerROS/cost_cloud"									to="/tb3_1/move_base/DWAPlannerROS/cost_cloud" />
+		<remap from="/move_base/DWAPlannerROS/global_plan"									to="/tb3_1/move_base/DWAPlannerROS/global_plan" />
+		<remap from="/move_base/DWAPlannerROS/local_plan"									to="/tb3_1/move_base/DWAPlannerROS/local_plan" />
+		<remap from="/move_base/DWAPlannerROS/parameter_descriptions"						to="/tb3_1/move_base/DWAPlannerROS/parameter_descriptions" />
+		<remap from="/move_base/DWAPlannerROS/parameter_updates"							to="/tb3_1/move_base/DWAPlannerROS/parameter_updates" />
+		<remap from="/move_base/DWAPlannerROS/trajectory_cloud"								to="/tb3_1/move_base/DWAPlannerROS/trajectory_cloud" />
+		<remap from="/move_base/NavfnROS/plan"												to="/tb3_1/move_base/NavfnROS/plan" />
+		<remap from="/move_base/cancel"														to="/tb3_1/move_base/cancel" />
+		<remap from="/move_base/current_goal"												to="/tb3_1/move_base/current_goal" />
+		<remap from="/move_base/feedback"													to="/tb3_1/move_base/feedback" />
+		<remap from="/move_base/global_costmap/costmap"										to="/tb3_1/move_base/global_costmap/costmap" />
+		<remap from="/move_base/global_costmap/costmap_updates"								to="/tb3_1/move_base/global_costmap/costmap_updates" />
+		<remap from="/move_base/global_costmap/footprint"									to="/tb3_1/move_base/global_costmap/footprint" />
+		<remap from="/move_base/global_costmap/inflation_layer/parameter_descriptions"		to="/tb3_1/move_base/global_costmap/inflation_layer/parameter_descriptions" />
+		<remap from="/move_base/global_costmap/inflation_layer/parameter_updates"			to="/tb3_1/move_base/global_costmap/inflation_layer/parameter_updates" />	
+		<remap from="/move_base/global_costmap/obstacles_layer/clearing_endpoints"			to="/tb3_1/move_base/global_costmap/obstacles_layer/clearing_endpoints" />
+		<remap from="/move_base/global_costmap/obstacles_layer/parameter_descriptions"		to="/tb3_1/move_base/global_costmap/obstacles_layer/parameter_descriptions" />
+		<remap from="/move_base/global_costmap/obstacles_layer/parameter_updates"			to="/tb3_1/move_base/global_costmap/obstacles_layer/parameter_updates" />
+		<remap from="/move_base/global_costmap/parameter_descriptions"						to="/tb3_1/move_base/global_costmap/parameter_descriptions" />
+		<remap from="/move_base/global_costmap/parameter_updates"							to="/tb3_1/move_base/global_costmap/parameter_updates" />
+		<remap from="/move_base/global_costmap/static/parameter_descriptions"				to="/tb3_1/move_base/global_costmap/static/parameter_descriptions" />
+		<remap from="/move_base/global_costmap/static/parameter_updates"					to="/tb3_1/move_base/global_costmap/static/parameter_updates" />
+		<remap from="/move_base/goal"														to="/tb3_1/move_base/goal" />
+		<remap from="/move_base/local_costmap/costmap"										to="/tb3_1/move_base/local_costmap/costmap" />
+		<remap from="/move_base/local_costmap/costmap_updates"								to="/tb3_1/move_base/local_costmap/costmap_updates" />
+		<remap from="/move_base/local_costmap/footprint"									to="/tb3_1/move_base/local_costmap/footprint" />
+		<remap from="/move_base/local_costmap/inflation_layer/parameter_descriptions"		to="/tb3_1/move_base/local_costmap/inflation_layer/parameter_descriptions" />
+		<remap from="/move_base/local_costmap/inflation_layer/parameter_updates"			to="/tb3_1/move_base/local_costmap/inflation_layer/parameter_updates" />
+		<remap from="/move_base/local_costmap/obstacles_layer/parameter_descriptions"		to="/tb3_1/move_base/local_costmap/obstacles_layer/parameter_descriptions" />
+		<remap from="/move_base/local_costmap/obstacles_layer/parameter_updates"			to="/tb3_1/move_base/local_costmap/obstacles_layer/parameter_updates" />
+		<remap from="/move_base/local_costmap/parameter_descriptions"						to="/tb3_1/move_base/local_costmap/parameter_descriptions" />
+		<remap from="/move_base/local_costmap/parameter_updates"							to="/tb3_1/move_base/local_costmap/parameter_updates" />
+		<remap from="/move_base/parameter_descriptions"										to="/tb3_1/move_base/parameter_descriptions" />
+		<remap from="/move_base/parameter_updates"											to="/tb3_1/move_base/parameter_updates" />
+		<remap from="/move_base/result"														to="/tb3_1/move_base/result" />
+		<remap from="/move_base/status"														to="/tb3_1/move_base/status" />
+		<remap from="/move_base_simple/goal"												to="/tb3_1/move_base_simple/goal" />
+
+	</node>
+
+		
+		
+</launch>

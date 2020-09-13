@@ -55,4 +55,11 @@
   <!-- Map merge -->
   <include file="$(find slam_pkg)/launch/map_merge_2robots.launch" />
 
+  <!-- Move base nodes -->
+  <include file="$(find navigation_pkg)/launch/move_base_robot_1.launch" />
+  <include file="$(find navigation_pkg)/launch/move_base_robot_2.launch" />
+
+
+
+
 </launch>
