@@ -1,0 +1,4 @@
+#request
+nav_msgs/OccupancyGrid map_data
+---
+bool success

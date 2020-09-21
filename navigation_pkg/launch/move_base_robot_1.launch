@@ -26,14 +26,11 @@
 
 		<param name="base_global_planner" value="navfn/NavfnROS" />
 		<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
-		<param name="local_costmap/width" value="10.0"/>
-		<param name="local_costmap/height" value="10.0"/>
 
 		<remap from="cmd_vel" to="/tb3_0/cmd_vel" />
 		<remap from="odom" to="$(arg odom_topic)" />
 		<remap from="scan" to="$(arg scan_topic)" />
 		<remap from="map" to="/map" />
-		<remap from="base_scan" to="tb3_0/base_scan" />
 
 		<remap from="/move_base/DWAPlannerROS/cost_cloud"									to="/tb3_0/move_base/DWAPlannerROS/cost_cloud" />
 		<remap from="/move_base/DWAPlannerROS/global_plan"									to="/tb3_0/move_base/DWAPlannerROS/global_plan" />

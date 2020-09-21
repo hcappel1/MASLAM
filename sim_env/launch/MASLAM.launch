@@ -50,7 +50,7 @@
   <include file="$(find slam_pkg)/launch/slam_node_2robots.launch" />
 
   <!-- Rviz -->
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d /home/hcappel1/.rviz/MASLAM.rviz" />
 
   <!-- Map merge -->
   <include file="$(find slam_pkg)/launch/map_merge_2robots.launch" />

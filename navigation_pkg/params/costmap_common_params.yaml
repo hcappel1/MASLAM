@@ -9,8 +9,8 @@ inflation_layer:
   inflation_radius: 0.2
 
 obstacle_layer:
-  observation_sources: scan
-  scan: {sensor_frame: base_scan, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+  observation_sources: tb3_0_scan
+  tb3_0_scan: {sensor_frame: tb3_0/base_scan, data_type: LaserScan, topic: /tb3_0/scan, marking: true, clearing: false}
   
 static:
   map_topic: map
