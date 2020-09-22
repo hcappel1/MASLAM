@@ -61,8 +61,8 @@ private:
     shared_ptr<Node> neighbor_node_frontier;
 
     vector<vector< shared_ptr<Node> > > frontier_list;
-    boost::shared_ptr<nav_msgs::Odometry const> pose_msg;
-    nav_msgs::Odometry init_pose;
+    boost::shared_ptr<nav_msgs::Odometry const> init_pose;
+    nav_msgs::Odometry init_pose_obj;
 
 
 public:
@@ -73,20 +73,25 @@ public:
 	
 	Frontier(){
 		ROS_INFO("created frontier object");
-		frontier_pub = nh.advertise<geometry_msgs::PoseArray>("frontier_pts", 1000);
 		odom_sub = nh.subscribe("/tb3_0/odom", 1000, &Frontier::OdomCallback, this);
+		frontier_pub = nh.advertise<geometry_msgs::PoseArray>("frontier_pts", 1000);
 	}
 
 	void OdomCallback(const nav_msgs::Odometry::ConstPtr &msg){
-		init_pose = *msg;
-		cout << "Init pose: " << init_pose.pose.pose.position.x << endl;
+		//init_pose = *msg;
 	}
 
 	bool MapCallback(frontier_pkg::FrontierMsg::Request &req,
 					 frontier_pkg::FrontierMsg::Response &res)
 	{
 		map_raw = req.map_data.data;
+		init_pose = ros::topic::waitForMessage<nav_msgs::Odometry>("/tb3_0/odom");
+		init_pose_obj = *init_pose;
+		init_pose_obj.pose.pose.position.x += 10.0;
+		init_pose_obj.pose.pose.position.y += 10.0;
+		cout << "init pose: " << init_pose_obj.pose.pose.position.x << "," << init_pose_obj.pose.pose.position.y << endl;
 		MapConvert();
+		PoseSnapInit();
 		res.success = true;
 
 		return true;
@@ -131,10 +136,24 @@ public:
 		    pose_array.poses.push_back(new_node->pose);
 	    }
 
+
 	}
 
 	void PoseSnapInit(){
 
+
+		for (vector< shared_ptr<Node> >::iterator it = map_node.begin(); it!=map_node.end(); ++it){
+			shared_ptr<Node> node_iter = *it;
+
+			if (sqrt(pow(node_iter->pose.position.x - init_pose_obj.pose.pose.position.x,2) + pow(node_iter->pose.position.y - init_pose_obj.pose.pose.position.y,2)) < 0.1){
+				current_node_map = node_iter;
+				cout << "found a node" << endl;
+				break;
+			}
+			else{
+				continue;
+			}
+		}
 	}
 
 
