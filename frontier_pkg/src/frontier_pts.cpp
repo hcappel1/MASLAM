@@ -10,6 +10,7 @@
 #include <frontier_pkg/FrontierMsg.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
+#include <list>
 
 
 using namespace std;
@@ -25,7 +26,9 @@ class Node{
         geometry_msgs::Pose pose;
         string key;
         bool map_open;
+        bool map_closed;
         bool frontier_open;
+        bool frontier_closed;
         int map_val;
         vector< shared_ptr<Node>> neighbors;
         int row;
@@ -35,8 +38,10 @@ class Node{
         	pose.position.x = 0.0;
         	pose.position.y = 0.0;
         	key = (to_string(pose.position.x) + "-" + to_string(pose.position.y));
-        	map_open = NULL;
-        	frontier_open = NULL;
+        	map_open = false;
+        	map_closed = false;
+        	frontier_open = false;
+        	frontier_closed = false;
         }
 
 };
@@ -51,8 +56,8 @@ private:
 
 	vector< shared_ptr<Node> > map_node;
 
-    vector< shared_ptr<Node> > map_queue;
-    vector< shared_ptr<Node> > frontier_queue; 
+    list< shared_ptr<Node> > map_queue;
+    list< shared_ptr<Node> > frontier_queue; 
     vector< shared_ptr<Node> > new_frontier;
 
     shared_ptr<Node> current_node_map;
@@ -82,11 +87,8 @@ public:
 					 frontier_pkg::FrontierMsg::Response &res)
 	{
 		map_raw = req.map_data.data;
-		SetInitPose();
-		MapConvert();
-		PoseSnapInit();
-		GetNeighbors();
-		FrontierPointTest(map_node);
+		DoFrontier();
+		FrontierArrayTest(frontier_list);
 		res.success = true;
 
 		return true;
@@ -149,7 +151,7 @@ public:
 
 			if (sqrt(pow(node_iter->pose.position.x - init_pose_obj.pose.pose.position.x,2) + pow(node_iter->pose.position.y - init_pose_obj.pose.pose.position.y,2)) < 0.1){
 				current_node_map = node_iter;
-				cout << "found a node" << endl;
+				cout << "found an initialized node" << endl;
 				break;
 			}
 			else{
@@ -200,6 +202,86 @@ public:
 		return false;
 	}
 
+	bool NodeValidity(const shared_ptr<Node> current_node)
+	{
+		for (int i = 0; i < current_node->neighbors.size(); i++){
+			if (current_node->neighbors[i]->map_val <= 10 && current_node->neighbors[i]->map_val != -1){
+				return true;
+			}
+			else{
+				continue;
+			}
+		}
+		return false;
+	}
+
+	void DoFrontier()
+	{
+		SetInitPose();
+		MapConvert();
+		GetNeighbors();
+		PoseSnapInit();
+
+		map_queue.push_back(current_node_map);
+		current_node_map->map_open = true;
+
+		while (!map_queue.empty()){
+
+			current_node_map = map_queue.front();
+			map_queue.pop_front();
+
+			if (current_node_map->map_closed == true){
+				continue;
+			}
+			else if (FrontierDetermination(current_node_map) == true){
+				frontier_queue.push_back(current_node_map);
+				current_node_map->frontier_open = true;
+
+				while (!frontier_queue.empty()){
+
+					current_node_frontier = frontier_queue.front();
+					frontier_queue.pop_front();
+
+					if (current_node_frontier->map_closed == true || current_node_frontier->frontier_closed == true){
+						continue;
+					}
+					else if (FrontierDetermination(current_node_frontier) == true){
+						new_frontier.push_back(current_node_frontier);
+
+						for (int i = 0; i < current_node_frontier->neighbors.size(); i++){
+							neighbor_node_frontier = current_node_frontier->neighbors[i];
+
+							if (neighbor_node_frontier->frontier_open != true && neighbor_node_frontier->frontier_closed != true && neighbor_node_frontier->map_closed != true){
+								frontier_queue.push_back(neighbor_node_frontier);
+								neighbor_node_frontier->frontier_open = true;
+							}
+						}
+					}
+					current_node_frontier->frontier_closed = true;
+
+				}
+				frontier_list.push_back(new_frontier);
+				for (int j = 0; j < new_frontier.size(); j++){
+					new_frontier[j]->map_closed = true;
+				}
+				new_frontier.clear();
+			}
+
+			for (int k = 0; k < current_node_map->neighbors.size(); k++){
+
+				neighbor_node_map = current_node_map->neighbors[k];
+
+				if (neighbor_node_map->map_open != true && neighbor_node_map->map_closed != true && NodeValidity(neighbor_node_map) == true){
+					map_queue.push_back(neighbor_node_map);
+					neighbor_node_map->map_open = true;
+				}
+			}
+			current_node_map->map_closed = true;
+		}
+		
+
+	}
+
 	void FrontierPointTest(vector<shared_ptr<Node>> map_node){
 		for (int i = 0; i < map_node.size(); i++){
 			bool frontier_pt = FrontierDetermination(map_node[i]);
@@ -215,6 +297,24 @@ public:
 			frontier_pub.publish(frontier_array);
 		}
 	}
+
+	void FrontierArrayTest(vector<vector< shared_ptr<Node> > > frontier_list){
+
+		for (int i = 0; i < frontier_list.size(); i++){
+			for (int j = 0; j < frontier_list[i].size(); j++){
+				frontier_array.poses.push_back(frontier_list[i][j]->pose);
+			}
+		}
+
+		cout << "size of frontier array: " << frontier_array.poses.size() << endl;
+		frontier_array.header.frame_id = "map";
+		frontier_array.header.stamp = ros::Time::now();
+		while (ros::ok()){
+			frontier_pub.publish(frontier_array);
+		}
+	}
+
+
 
 
 
