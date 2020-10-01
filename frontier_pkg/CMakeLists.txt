@@ -73,7 +73,8 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
-  nav_msgs # Or other packages containing msgs
+  nav_msgs
+  geometry_msgs # Or other packages containing msgs
 )
 
 ################################################

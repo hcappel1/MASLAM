@@ -11,6 +11,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
 #include <list>
+#include <algorithm>
 
 
 using namespace std;
@@ -75,6 +76,7 @@ public:
 	vector<signed char> map_raw;
 	geometry_msgs::PoseArray pose_array;
 	geometry_msgs::PoseArray frontier_array;
+	geometry_msgs::PoseArray optimal_frontier_pts;
 	geometry_msgs::Pose node_pose;
 	
 	Frontier(){
@@ -88,7 +90,11 @@ public:
 	{
 		map_raw = req.map_data.data;
 		DoFrontier();
-		FrontierArrayTest(frontier_list);
+		SortFrontierArray();
+		OptimalFrontierPts();
+		// OptimalFrontierPtsTest();
+		//FrontierArrayTest(frontier_list);
+		res.optimal_frontier_pts = optimal_frontier_pts;
 		res.success = true;
 
 		return true;
@@ -183,6 +189,45 @@ public:
 				map_node[i]->neighbors.push_back(map_node[i+1]);
 				map_node[i]->neighbors.push_back(map_node[i-1]);
 			}
+
+			if (map_node[i]->row == 0 && map_node[i]->col == 0){
+				map_node[i]->neighbors.push_back(map_node[i+385]);
+			}
+			else if (map_node[i]->row == 0 && map_node[i]->col == 383){
+				map_node[i]->neighbors.push_back(map_node[i+383]);
+			}
+			else if (map_node[i]->row == 383 && map_node[i]->col == 0){
+				map_node[i]->neighbors.push_back(map_node[i-383]);
+			}
+			else if (map_node[i]->row == 383 && map_node[i]->col == 383){
+				map_node[i]->neighbors.push_back(map_node[i-385]);
+			}
+			else if (map_node[i]->row == 0){
+				map_node[i]->neighbors.push_back(map_node[i+383]);
+				map_node[i]->neighbors.push_back(map_node[i+385]);
+			}
+			else if (map_node[i]->row == 383){
+				map_node[i]->neighbors.push_back(map_node[i-383]);
+				map_node[i]->neighbors.push_back(map_node[i-385]);
+			}
+			else if (map_node[i]->col == 0){
+				map_node[i]->neighbors.push_back(map_node[i+385]);
+				map_node[i]->neighbors.push_back(map_node[i-383]);
+			}
+			else if (map_node[i]->col == 383){
+				map_node[i]->neighbors.push_back(map_node[i+383]);
+				map_node[i]->neighbors.push_back(map_node[i-385]);
+			}
+			else{
+				map_node[i]->neighbors.push_back(map_node[i+383]);
+				map_node[i]->neighbors.push_back(map_node[i+385]);
+				map_node[i]->neighbors.push_back(map_node[i-383]);
+				map_node[i]->neighbors.push_back(map_node[i-385]);
+			}
+
+
+
+
 
 		}
 	}
@@ -282,6 +327,21 @@ public:
 
 	}
 
+	static bool SortFunction( const vector< shared_ptr<Node>> v1, const vector< shared_ptr<Node>> v2 ) { 
+	 	return v1.size() > v2.size(); 
+	} 
+
+	void SortFrontierArray(){
+		std::sort(frontier_list.begin(), frontier_list.end(), &SortFunction);
+	}
+
+	void OptimalFrontierPts(){
+		for (int i = 0; i < frontier_list.size(); i++){
+			int median_val = int(frontier_list[i].size()/2);
+			optimal_frontier_pts.poses.push_back(frontier_list[i][median_val]->pose);
+		}
+	}
+
 	void FrontierPointTest(vector<shared_ptr<Node>> map_node){
 		for (int i = 0; i < map_node.size(); i++){
 			bool frontier_pt = FrontierDetermination(map_node[i]);
@@ -312,6 +372,16 @@ public:
 		while (ros::ok()){
 			frontier_pub.publish(frontier_array);
 		}
+	}
+
+	void OptimalFrontierPtsTest(){
+		cout << "frontier_pts size: " << optimal_frontier_pts.poses.size() << endl;
+		optimal_frontier_pts.header.frame_id = "map";
+		optimal_frontier_pts.header.stamp = ros::Time::now();
+		while (ros::ok()){
+			frontier_pub.publish(optimal_frontier_pts);
+		}
+
 	}
 
 
