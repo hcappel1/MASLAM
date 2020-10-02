@@ -1,0 +1,6 @@
+#request
+geometry_msgs/PoseArray optimal_frontier_pts
+---
+#response
+geometry_msgs/PoseStamped frontier_choice
+bool success

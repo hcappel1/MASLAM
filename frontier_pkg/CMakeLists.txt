@@ -60,6 +60,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   FrontierMsg.srv
+  ChoiceMsg.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -133,6 +134,12 @@ target_link_libraries(frontier_pts
 add_executable(frontier_service_call src/frontier_service_call.cpp)
 add_dependencies(frontier_service_call ${frontier_service_call_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(frontier_service_call
+  ${catkin_LIBRARIES}
+)
+
+add_executable(choose_frontier src/choose_frontier.cpp)
+add_dependencies(choose_frontier ${choose_frontier_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(choose_frontier
   ${catkin_LIBRARIES}
 )
 

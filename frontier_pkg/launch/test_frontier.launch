@@ -1,4 +1,5 @@
 <launch>
 	<node pkg="frontier_pkg" type="frontier_pts" name="frontier_pts_node" output="screen" />
 	<node pkg="frontier_pkg" type="frontier_service_call" name="frontier_service_call_node" output="screen" />
+	<node pkg="frontier_pkg" type="choose_frontier" name="choose_frontier_node" output="screen" />
 </launch>
