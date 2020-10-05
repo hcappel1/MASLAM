@@ -92,7 +92,7 @@ public:
 		DoFrontier();
 		SortFrontierArray();
 		OptimalFrontierPts();
-		// OptimalFrontierPtsTest();
+		//OptimalFrontierPtsTest();
 		//FrontierArrayTest(frontier_list);
 		res.optimal_frontier_pts = optimal_frontier_pts;
 		res.success = true;

@@ -34,8 +34,13 @@ int main(int argc, char **argv)
 	if (frontier_client.call(srv)){
 		ROS_INFO("successfully sent request for list of frontier points");
 		frontier_pts = srv.response.optimal_frontier_pts;
+		geometry_msgs::PoseArray pass_down_path;
+		pass_down_path.header.stamp = ros::Time::now();
+		pass_down_path.header.frame_id = "map";
 
-		choice_srv.request.optimal_frontier_pts = frontier_pts;
+		choice_srv.request.pass_down_frontier_req = frontier_pts;
+		choice_srv.request.pass_down_path_req = pass_down_path;
+		choice_srv.request.robots_remaining = 2;
 		if (choose_frontier_client.call(choice_srv)){
 			ROS_INFO("successfully sent request for frontier choice");
 		}
